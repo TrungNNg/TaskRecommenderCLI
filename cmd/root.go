@@ -3,8 +3,10 @@ package cmd
 import (
     "fmt"
     "os"
+    "log"
 
     "github.com/spf13/cobra"
+    "github.com/boltdb/bolt"
 )
 
 var rootCmd = &cobra.Command{
@@ -24,8 +26,27 @@ Use "task [command] --help" for more information about a command.`)
   },
 }
 
+var bucket_name = []byte("todo")
+
 func init() {
+  // init DB
+  db, err := bolt.Open("task.db", 0600, nil)
+  if err != nil {
+      log.Fatal(err)
+  }
+  defer db.Close()
+
+  err = db.Update(func(tx *bolt.Tx) error {
+      _, err = tx.CreateBucketIfNotExists([]byte(bucket_name))
+      if err != nil {
+          return fmt.Errorf("create bucket: %s", err)
+      }
+      return nil
+  })
   
+  if err != nil {
+      log.Fatal(err)
+  }
 }
 
 func Execute() {
