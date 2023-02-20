@@ -20,7 +20,7 @@ type Task struct {
 }
 
 var addCmd = &cobra.Command{
-  Use:   "add",
+  Use:   "add <task name>",
   Short: "add task",
   Run: func(cmd *cobra.Command, args []string) {
 	//fmt.Println("add task")	
