@@ -5,6 +5,8 @@ import (
     "encoding/gob"
     "bytes"
     "time"
+    "fmt"
+
 
 	"github.com/spf13/cobra"
     "github.com/boltdb/bolt"
@@ -12,45 +14,66 @@ import (
 
 var doCmd = &cobra.Command{
   Use:   "do <task id>",
-  Short: "mark task as complete",
-  Args: cobra.MinimumNArgs(1),
+  Short: "recommend a task",
   Run: func(cmd *cobra.Command, args []string) {
       db, err := bolt.Open("task.db", 0600, nil)
       if err != nil {
           log.Fatal(err)
       }
       defer db.Close()
-      err = db.Update(func(tx *bolt.Tx) error {
-          bucket := tx.Bucket(bucket_name)
+
+      err = db.View(func(tx *bolt.Tx) error {
+          bucket := tx.Bucket(task_bucket)
           if err != nil {
             log.Fatal(err)
           }
-          for _, arg := range args {
+
+          c := bucket.Cursor()
+          task_id := ""
+          task_des := ""
+          var task_time int64
+
+          // use when user want random task
+          m := map[string]string{}
+
+          for k, v := c.First(); k != nil; k, v = c.Next() {
               var task Task
-              data := bucket.Get([]byte(arg))
-              buf := bytes.NewBuffer(data)
+              buf := bytes.NewBuffer(v)
               decoder := gob.NewDecoder(buf)
               decoder.Decode(&task)
 
-              task.Done = true
-              task.Done_time = time.Now()
+              // save task's id and des in a map
+              m[task.Id] = task.Description
 
-              buf = new(bytes.Buffer)
-              encoder := gob.NewEncoder(buf)
-              encoder.Encode(task)
-
-              bucket.Put([]byte(task.Id), buf.Bytes())
+              // recommend task with highest time since startTime
+              if task_time < time.Since(task.StartTime).Milliseconds() {
+                task_id = task.Id
+                task_des = task.Description
+                task_time = time.Since(task.StartTime).Milliseconds()
+              }
           }
+
+          if randomFlag {
+            for k, v := range m {
+                fmt.Printf("---\nRecommend task: %s. %s\n---\n", k, v)
+                // map in Go is random, so just pick the first key
+                return nil
+            }
+          }
+
+          fmt.Printf("---\nRecommend task: %s. %s\n---\n",task_id, task_des)
           return nil
       })
-
       if err != nil {
           log.Fatal(err)
       }
   },
 }
 
+var randomFlag bool
+
 func init() {
     rootCmd.AddCommand(doCmd)
+    doCmd.Flags().BoolVarP(&randomFlag, "random", "r", false, "pick a random task")
 }
 

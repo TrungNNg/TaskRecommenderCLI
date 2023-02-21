@@ -5,6 +5,7 @@ import (
     "log"
     "encoding/gob"
     "bytes"
+    "time"
 
 	"github.com/spf13/cobra"
     "github.com/boltdb/bolt"
@@ -13,7 +14,6 @@ import (
 var listCmd = &cobra.Command{
   Use: "list",
   Short: "list all current tasks",
-  Long: "list all current tasks",
   Run: func(cmd *cobra.Command, args []string) {
       db, err := bolt.Open("task.db", 0600, nil)
       if err != nil {
@@ -21,35 +21,22 @@ var listCmd = &cobra.Command{
       }
       defer db.Close()
 
-      // retrieve the data
+      // print all Task in task bucket
       err = db.View(func(tx *bolt.Tx) error {
-          bucket := tx.Bucket(bucket_name)
+          bucket := tx.Bucket(task_bucket)
           if bucket == nil {
-              return fmt.Errorf("Bucket %q not found!", bucket_name)
+              return fmt.Errorf("Bucket %q not found!", task_bucket)
           }
 
           c := bucket.Cursor()
           for k, v := c.First(); k != nil; k, v = c.Next() {
-
               var task Task
               buf := bytes.NewBuffer(v)
               decoder := gob.NewDecoder(buf)
               decoder.Decode(&task)
 
-              if completedFlag && !task.Done {
-                  continue
-              }
-
-              if incompleteFlag && task.Done {
-                  continue
-              }
-
-              fmt.Printf("%s. %s - ",k, task.Name)
-              if task.Done {
-                fmt.Println("DONE")
-              } else {
-                fmt.Println()
-              }
+              fmt.Printf("%s. %s\n",k,task.Description)
+              fmt.Printf("time since added %s\n\n", time.Since(task.StartTime).String())              
           }
           return nil
       })
@@ -59,11 +46,11 @@ var listCmd = &cobra.Command{
   }},
 }
 
-var completedFlag bool
-var incompleteFlag bool
+//var completedFlag bool
+//var incompleteFlag bool
 
 func init() {
 	rootCmd.AddCommand(listCmd)
-	listCmd.Flags().BoolVarP(&completedFlag, "completed", "c", false, "display only completed tasks")
-    listCmd.Flags().BoolVarP(&incompleteFlag, "incomplete", "i", false, "display only incomplete tasks")
+	//listCmd.Flags().BoolVarP(&completedFlag, "completed", "c", false, "display only completed tasks")
+    //listCmd.Flags().BoolVarP(&incompleteFlag, "incomplete", "i", false, "display only incomplete tasks")
 }

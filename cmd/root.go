@@ -19,14 +19,14 @@ Usage: task [command]
 
 Available Commands:
   add         Add a new task to your TODO list
-  do          Mark a task on your TODO list as complete
+  done        Mark a task on your TODO list as complete
   list        List all of your incomplete tasks
-
+  do          Recommend a task
 Use "task [command] --help" for more information about a command.`)
   },
 }
 
-var bucket_name = []byte("todo")
+var task_bucket = []byte("task")
 
 func init() {
   // init DB
@@ -37,7 +37,7 @@ func init() {
   defer db.Close()
 
   err = db.Update(func(tx *bolt.Tx) error {
-      _, err = tx.CreateBucketIfNotExists([]byte(bucket_name))
+      _, err = tx.CreateBucketIfNotExists([]byte(task_bucket))
       if err != nil {
           return fmt.Errorf("create bucket: %s", err)
       }

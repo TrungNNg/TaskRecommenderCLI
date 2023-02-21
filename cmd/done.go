@@ -7,9 +7,9 @@ import (
     "github.com/boltdb/bolt"
 )
 
-var rmCmd = &cobra.Command{
-  Use:   "rm <task id>",
-  Short: "remove task using task id",
+var doneCmd = &cobra.Command{
+  Use:   "done <task id>",
+  Short: "mark task done and remove using task id",
   Args: cobra.MinimumNArgs(1),
   Run: func(cmd *cobra.Command, args []string) {
       db, err := bolt.Open("task.db", 0600, nil)
@@ -18,7 +18,7 @@ var rmCmd = &cobra.Command{
       }
       defer db.Close()
       err = db.Update(func(tx *bolt.Tx) error {
-          bucket := tx.Bucket(bucket_name)
+          bucket := tx.Bucket(task_bucket)
           if err != nil {
             log.Fatal(err)
           }
@@ -35,5 +35,5 @@ var rmCmd = &cobra.Command{
 }
 
 func init() {
-    rootCmd.AddCommand(rmCmd)
+    rootCmd.AddCommand(doneCmd)
 }

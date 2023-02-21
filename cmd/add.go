@@ -1,27 +1,28 @@
 package cmd
 
 import (
-	"strings"
+    "strings"
     "log"
     "strconv"
     "encoding/gob"
     "bytes"
     "time"
+    "fmt"
 
 	"github.com/spf13/cobra"
 	"github.com/boltdb/bolt"
 )
 
 type Task struct {
-    Id string
-    Name string
-    Done bool
-    Done_time time.Time
+    Id string // Task's Id in BoltDB
+    Description string // Task's detail
+    StartTime time.Time // Time when the task was added
 }
 
 var addCmd = &cobra.Command{
-  Use:   "add <task name>",
-  Short: "add task",
+  Use:   "add <task descriptsion>",
+  Short: "add task with given description. Ex: task add Do homework.",
+  Args: cobra.MinimumNArgs(1),
   Run: func(cmd *cobra.Command, args []string) {
 	//fmt.Println("add task")	
 	db, err := bolt.Open("task.db", 0600, nil)
@@ -30,16 +31,15 @@ var addCmd = &cobra.Command{
 	}
 	defer db.Close()
 
-
-      // store some data
+      // ask user for task details then add to DB
       err = db.Update(func(tx *bolt.Tx) error {
-          bucket := tx.Bucket(bucket_name)
+          bucket := tx.Bucket(task_bucket)
 
+          // get next id in task_bucket
           id, _ := bucket.NextSequence()
           ID := []byte(strconv.Itoa(int(id)))
 
-          task_name := strings.Join(args, "")
-          task := Task{Id:string(ID), Done_time:time.Now(), Name:task_name, Done:false}
+          task := Task{Id:string(ID), Description:strings.Join(args, " "),StartTime:time.Now()}
 
           buf := new(bytes.Buffer)
           encoder := gob.NewEncoder(buf)
@@ -49,6 +49,7 @@ var addCmd = &cobra.Command{
           if err != nil {
               return err
           }
+          fmt.Println("Successfuly added", task)
           return nil
       })
 
