@@ -29,7 +29,6 @@ or pick a random task:
 $ task do -r
 
 ### Implementation
-Use Cobra to handle command line argument
-Use BoltDB for data storage
+Use Cobra to handle command line argument and BoltDB for data storage
 
 
