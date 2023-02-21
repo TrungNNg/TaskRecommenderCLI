@@ -15,16 +15,15 @@ $ task list
 Done and remove a task
 $ task done <task id>
 
-Recommend a task
-// default will recommend task which stay longest in the list
+Recommend a task:
+default will recommend task which stay longest in the list
 $ task do
 
-// or pick a random task
+or pick a random task
 $ task do -r
 
 ### Implementation
 Use Cobra to handle command line argument
 Use BoltDB for data storage
 
-### Installation
-Clone the repo and compile
+
