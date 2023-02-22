@@ -12,7 +12,7 @@ var doneCmd = &cobra.Command{
   Short: "mark task done and remove using task id",
   Args: cobra.MinimumNArgs(1),
   Run: func(cmd *cobra.Command, args []string) {
-      db, err := bolt.Open("task.db", 0600, nil)
+      db, err := bolt.Open("/Users/trungng/desktop/TaskRecommenderCLI/task.db", 0600, nil)
       if err != nil {
           log.Fatal(err)
       }

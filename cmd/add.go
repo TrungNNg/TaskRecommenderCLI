@@ -25,7 +25,7 @@ var addCmd = &cobra.Command{
   Args: cobra.MinimumNArgs(1),
   Run: func(cmd *cobra.Command, args []string) {
 	//fmt.Println("add task")	
-	db, err := bolt.Open("task.db", 0600, nil)
+	db, err := bolt.Open("/Users/trungng/desktop/TaskRecommenderCLI/task.db", 0600, nil)
 	if err != nil {
 		log.Fatal(err)
 	}

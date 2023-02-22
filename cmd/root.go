@@ -30,7 +30,7 @@ var task_bucket = []byte("task")
 
 func init() {
   // init DB
-  db, err := bolt.Open("task.db", 0600, nil)
+  db, err := bolt.Open("/Users/trungng/desktop/TaskRecommenderCLI/task.db", 0600, nil)
   if err != nil {
       log.Fatal(err)
   }
